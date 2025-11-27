@@ -32,8 +32,29 @@ export const useDocumentStore = create<DocumentState>((set) => ({
   isLoading: false,
   error: null,
 
-  setDocument: (document: Document) =>
-    set({ document, error: null }),
+  setDocument: (document: Document) => {
+    // Ensure all section IDs are unique
+    const seenIds = new Set<string>();
+    const normalizedSections = document.sections.map((section, index) => {
+      let uniqueId = section.id;
+      // If ID is already seen or empty, generate a new one
+      if (!uniqueId || seenIds.has(uniqueId)) {
+        let counter = index + 1;
+        uniqueId = `section-${counter}`;
+        while (seenIds.has(uniqueId)) {
+          counter++;
+          uniqueId = `section-${counter}`;
+        }
+      }
+      seenIds.add(uniqueId);
+      return { ...section, id: uniqueId };
+    });
+
+    set({
+      document: { ...document, sections: normalizedSections },
+      error: null,
+    });
+  },
 
   updateMetadata: (metadata: Partial<DocumentMetadata>) =>
     set((state) => ({
@@ -93,6 +114,26 @@ export const useDocumentStore = create<DocumentState>((set) => ({
         document: {
           ...state.document,
           sections: state.document.sections.filter((s) => s.id !== sectionId),
+        },
+      };
+    }),
+
+  addParagraph: (sectionId: string) =>
+    set((state) => {
+      if (!state.document) return state;
+      return {
+        document: {
+          ...state.document,
+          sections: state.document.sections.map((s) => {
+            if (s.id !== sectionId) return s;
+            return {
+              ...s,
+              content: [
+                ...s.content,
+                { subtitle: "", text: "New paragraph text..." },
+              ],
+            };
+          }),
         },
       };
     }),

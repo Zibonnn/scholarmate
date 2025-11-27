@@ -7,26 +7,41 @@ import { Label } from "@/components/ui/label";
 
 export function ExportPanel() {
   const doc = useDocumentStore((state) => state.document);
+  const setViewMode = useDocumentStore((state) => state.setViewMode);
+  const viewMode = doc?.viewMode || "print";
 
   if (!doc) return null;
 
   const handleExportPDF = async () => {
     try {
-      const response = await fetch("/api/export", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ format: "pdf", document: doc }),
-      });
+      // Dynamically import html2pdf to avoid SSR issues
+      const html2pdf = (await import("html2pdf.js")).default;
 
-      if (!response.ok) throw new Error("Export failed");
+      // Ensure we're in print preview mode for PDF export
+      if (viewMode !== "print") {
+        setViewMode("print");
+        // Wait for DOM to update
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      }
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${doc.metadata.title || "document"}.pdf`;
-      a.click();
-      window.URL.revokeObjectURL(url);
+      const element = document.getElementById("print-preview-content");
+      if (!element) {
+        throw new Error("Could not find document content to export");
+      }
+
+      const opt = {
+        margin: 0,
+        filename: `${doc.metadata.title || "document"}.pdf`,
+        image: { type: "jpeg" as const, quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: {
+          unit: "in",
+          format: (doc.paperSize === "a4" ? "a4" : "letter") as "a4" | "letter",
+          orientation: "portrait" as const,
+        },
+      };
+
+      await html2pdf().set(opt).from(element).save();
     } catch (error) {
       console.error("PDF export error:", error);
       alert("Failed to export PDF. Try using Print instead.");

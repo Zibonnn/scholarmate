@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useDocumentStore } from "@/lib/store/documentStore";
 import { DocumentViewer } from "@/components/document/DocumentViewer";
+import { EditMode } from "@/components/editor/EditMode";
 import { Sidebar } from "@/components/sidebar/Sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BookOpen, Eye, Edit3, FilePlus } from "lucide-react";
@@ -66,7 +67,11 @@ export default function EditorPage({ params }: { params: { id: string } }) {
         {appMode === "preview" && <Sidebar />}
 
         {/* --- MAIN CONTENT AREA --- */}
-        <DocumentViewer />
+        {appMode === "preview" ? (
+          <DocumentViewer />
+        ) : (
+          <EditMode onSave={() => setAppMode("preview")} />
+        )}
       </div>
     </div>
   );

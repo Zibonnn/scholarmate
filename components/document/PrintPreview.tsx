@@ -111,7 +111,7 @@ export function PrintPreview() {
   const pageOffset = calculatePageOffset();
 
   return (
-    <div className="py-12 px-8">
+    <div id="print-preview-content" className="py-12 px-8">
       {renderTitleSection()}
       {renderTableOfContents()}
 

@@ -71,6 +71,7 @@ export interface DocumentState {
   setPaperSize: (size: PaperSize) => void;
   setViewMode: (mode: ViewMode) => void;
   setShowIndex: (show: boolean) => void;
+  addParagraph: (sectionId: string) => void;
   reset: () => void;
 }
 

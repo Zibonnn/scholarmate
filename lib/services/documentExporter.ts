@@ -15,9 +15,9 @@ export async function exportDocument(
 ): Promise<ExportResult> {
   switch (format) {
     case "pdf":
-      // For PDF, we'll use browser print for MVP
-      // In production, you'd use puppeteer or @react-pdf/renderer
-      throw new Error("PDF export via API not implemented. Use browser print instead.");
+      // PDF export is handled client-side using html2pdf.js
+      // This API route should not be called for PDF exports
+      throw new Error("PDF export is handled client-side. Use the Download PDF button.");
     
     case "docx":
       return await exportToDOCX(document);
